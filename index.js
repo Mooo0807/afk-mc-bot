@@ -1,40 +1,37 @@
 const mineflayer = require('mineflayer');
-const express = require('express');
 
-// === Create bot ===
+// Configuration for the bot
 const bot = mineflayer.createBot({
-  host: 'blockbande.net',
-  port: 25565,
-  username: 'flexyog1234@gmail.com', // Replace with your Java Edition email
-  auth: 'microsoft' // or 'mojang' if you're using an old Mojang account
+  host: 'blockbande.net', // replace with your server's address
+  port: 25565, // default Minecraft port
+  username: 'Momad123', // replace with your bot's username
+  password: 'yourpassword', // optional, only if required
+  version: '1.21.4', // replace with the server's version
 });
 
-// === On bot spawn ===
 bot.once('spawn', () => {
-  console.log('✅ Bot connected and spawned.');
+  console.log('✅ Bot has joined the server and is now AFK.');
 
-  // Wait 15 seconds, then teleport to /home 1
+  // Send /home 1 after 5 seconds
   setTimeout(() => {
     bot.chat('/home 1');
-    console.log('🏠 Sent /home 1 command');
-  }, 15000);
+    console.log('📩 Sent /home 1');
+  }, 5000);
 
-  // Anti-AFK: look around every 10 seconds
+  // Every minute: look around + jump
   setInterval(() => {
-    const yaw = Math.random() * 2 * Math.PI;
-    const pitch = (Math.random() - 0.5) * Math.PI;
-    bot.look(yaw, pitch, true);
-    console.log('🔄 Looking around to avoid AFK kick');
-  }, 10000);
+    // Look in a random direction
+    bot.look(Math.random() * Math.PI * 2, Math.random() * Math.PI * 2);
+
+    // Small jump
+    bot.setControlState('jump', true);
+    setTimeout(() => bot.setControlState('jump', false), 500);
+
+    console.log('🤸 Bot looked around and jumped (anti-AFK)');
+  }, 60000); // every 60 seconds
 });
 
-// === On bot disconnect ===
+// Handle disconnection
 bot.on('end', () => {
-  console.log('❌ Bot disconnected. Will restart...');
-  setTimeout(() => process.exit(), 10000); // Restart via Render auto-restart
+  console.log('❌ Bot has been disconnected.');
 });
-
-// === Keep-alive web server for Render ===
-const app = express();
-app.get('/', (req, res) => res.send('🤖 AFK Bot is alive'));
-app.listen(3000, () => console.log('🌐 Web server running on port 3000'));
